@@ -1,0 +1,203 @@
+#!/bin/sh
+# ================================================
+# INIT SCRIPT FOR DWM LIVE CD
+# Specialized for squashfs + overlay live system
+# ================================================
+
+export PATH=/bin:/usr/bin:/sbin:/usr/sbin
+
+shell() {
+    echo "Dropping to emergency shell..."
+    setsid sh -c 'exec sh </dev/tty1 >/dev/tty1 2>&1'
+}
+
+msg() {
+    echo ":: $*"
+}
+
+mount_virtual() {
+    msg "Mounting virtual filesystems..."
+    mount -t proc proc /proc -o nosuid,noexec,nodev
+    mount -t sysfs sys /sys -o nosuid,noexec,nodev
+    mount -t devtmpfs dev /dev -o mode=0755,nosuid
+    mount -t tmpfs run /run -o nosuid,nodev,mode=0755
+    mount -t tmpfs tmp /tmp -o nosuid,nodev
+}
+
+find_iso_device() {
+    # Cari device CD/USB yang berisi ISO
+    for device in /dev/sr[0-9]* /dev/cdrom /dev/dvd /dev/block/*; do
+        [ -b "$device" ] || continue
+        if mount -t iso9660 -o ro "$device" /mnt/iso 2>/dev/null; then
+            if [ -f /mnt/iso/boot/filesystem.sfs ] || [ -f /mnt/iso/live/filesystem.sfs ]; then
+                echo "$device"
+                return 0
+            fi
+            umount /mnt/iso
+        fi
+    done
+    
+    # Coba dari /dev/disk/by-label/
+    if [ -d /dev/disk/by-label ]; then
+        for device in /dev/disk/by-label/*; do
+            [ -L "$device" ] || continue
+            real_dev=$(readlink -f "$device")
+            if mount -t iso9660 -o ro "$real_dev" /mnt/iso 2>/dev/null; then
+                if [ -f /mnt/iso/boot/filesystem.sfs ]; then
+                    echo "$real_dev"
+                    return 0
+                fi
+                umount /mnt/iso
+            fi
+        done
+    fi
+    
+    return 1
+}
+
+load_squashfs() {
+    msg "Setting up Live CD environment..."
+    
+    # Buat direktori yang diperlukan
+    mkdir -p /mnt/iso /squashfs /overlay /newroot
+    mkdir -p /overlay/{upper,work}
+    
+    # Cari dan mount ISO
+    msg "Looking for Live CD media..."
+    ISO_DEVICE=$(find_iso_device)
+    
+    if [ -z "$ISO_DEVICE" ]; then
+        msg "ERROR: No Live CD media found!"
+        msg "Trying fallback: check for filesystem.sfs in /..."
+        
+        # Fallback: mungkin filesystem.sfs sudah di-copy ke initrd
+        if [ -f /filesystem.sfs ]; then
+            msg "Found filesystem.sfs in initrd"
+            SQUASHFS_PATH=/filesystem.sfs
+        else
+            msg "Available devices:"
+            ls -la /dev/sd* /dev/sr* 2>/dev/null || true
+            shell
+        fi
+    else
+        msg "Found Live CD at: $ISO_DEVICE"
+        mount -t iso9660 -o ro "$ISO_DEVICE" /mnt/iso
+        
+        # Cari filesystem.sfs di beberapa lokasi umum
+        for path in /mnt/iso/boot/filesystem.sfs /mnt/iso/live/filesystem.sfs /mnt/iso/filesystem.sfs; do
+            if [ -f "$path" ]; then
+                SQUASHFS_PATH="$path"
+                msg "Found squashfs: $SQUASHFS_PATH"
+                break
+            fi
+        done
+    fi
+    
+    if [ -z "$SQUASHFS_PATH" ] || [ ! -f "$SQUASHFS_PATH" ]; then
+        msg "ERROR: Cannot find filesystem.sfs!"
+        shell
+    fi
+    
+    # Mount squashfs
+    msg "Mounting squashfs filesystem..."
+    if ! mount -t squashfs -o ro "$SQUASHFS_PATH" /squashfs; then
+        msg "ERROR: Failed to mount squashfs!"
+        msg "Kernel squashfs module loaded? Check: lsmod | grep squash"
+        shell
+    fi
+    
+    # Setup overlayfs
+    msg "Setting up overlay filesystem..."
+    mount -t tmpfs tmpfs /overlay
+    if ! mount -t overlay overlay -o lowerdir=/squashfs,upperdir=/overlay/upper,workdir=/overlay/work /newroot; then
+        msg "ERROR: Failed to create overlay!"
+        shell
+    fi
+    
+    # Cleanup ISO mount jika ada
+    [ -d /mnt/iso ] && umount /mnt/iso 2>/dev/null
+}
+
+setup_newroot() {
+    msg "Preparing new root filesystem..."
+    
+    # Pindah virtual filesystems ke newroot
+    mount --move /proc /newroot/proc
+    mount --move /sys /newroot/sys
+    mount --move /dev /newroot/dev
+    mount --move /run /newroot/run
+    mount --move /tmp /newroot/tmp 2>/dev/null || mkdir -p /newroot/tmp
+    
+    # Buat direktori penting jika tidak ada
+    mkdir -p /newroot/{boot,home,mnt,media,root}
+    
+    # Setup basic devices
+    [ -e /newroot/dev/console ] || mknod /newroot/dev/console c 5 1
+    [ -e /newroot/dev/null ] || mknod /newroot/dev/null c 1 3
+    [ -e /newroot/dev/zero ] || mknod /newroot/dev/zero c 1 5
+    
+    # Copy resolv.conf untuk networking
+    if [ -f /etc/resolv.conf ]; then
+        mkdir -p /newroot/etc
+        cp /etc/resolv.conf /newroot/etc/
+    fi
+}
+
+# =================== MAIN EXECUTION ===================
+msg "Starting DWM Live CD init..."
+
+# 1. Mount virtual filesystems
+mount_virtual
+
+# 2. Parse kernel command line (untuk debug options)
+read -r cmdline < /proc/cmdline
+msg "Kernel cmdline: $cmdline"
+
+case "$cmdline" in
+    *break=init*)
+        msg "Breakpoint requested at init"
+        shell
+        ;;
+    *debug*)
+        DEBUG=1
+        msg "Debug mode enabled"
+        ;;
+esac
+
+# 3. Load Live CD filesystem
+load_squashfs
+
+# 4. Check for init in newroot
+if [ ! -x "/newroot/sbin/init" ] && [ ! -x "/newroot/bin/init" ] && [ ! -x "/newroot/init" ]; then
+    msg "ERROR: No init found in newroot!"
+    msg "Contents of /newroot:"
+    ls -la /newroot/ | head -20
+    msg "Looking for init..."
+    find /newroot -name "init" -type f 2>/dev/null
+    shell
+fi
+
+# 5. Find init binary
+INIT_BIN=""
+for init in /newroot/sbin/init /newroot/bin/init /newroot/init /newroot/lib/systemd/systemd; do
+    if [ -x "$init" ]; then
+        INIT_BIN="$init"
+        msg "Found init: $INIT_BIN"
+        break
+    fi
+done
+
+if [ -z "$INIT_BIN" ]; then
+    msg "ERROR: No executable init found!"
+    shell
+fi
+
+# 6. Setup newroot dan switch
+setup_newroot
+
+msg "Switching to new root..."
+exec switch_root /newroot "$INIT_BIN" "$@"
+
+# Fallback jika switch_root gagal
+msg "ERROR: switch_root failed!"
+shell
