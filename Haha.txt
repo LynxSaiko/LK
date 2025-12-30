@@ -1,9 +1,16 @@
-sudo mksquashfs /mnt/lfs live/boot/filesystem.sfs \
-    -comp zstd \
+# mksquashfs /mnt/lfs live/boot/filesystem.sfs \
     -b 1048576 \
-    -Xcompression-level 22 \   # level maksimal untuk ukuran kecil (zstd support sampai 22)
-    -wildcards \
-    -e dev proc sys run tmp root tools sources home usr/share/doc usr/share/man usr/share/info var/cache var/log \
-    -e "*.tgz" "*.tar.gz" "*.tar.xz" "*.tar.bz2" "*.tar" "*.gz" "*.xz" "*.bz2" "*.zip" "*.7z" "*.rar" "*.deb" "*.rpm" \
-    -e ".git" ".git/*" "*.o" "*.a" \
-    -noappend
+    -comp zstd \
+    -e /mnt/lfs/root/* \
+    -e /mnt/lfs/tmp/* \
+    -e /mnt/lfs/dev/* \
+    -e /mnt/lfs/proc/* \
+    -e /mnt/lfs/sys/* \
+    -e /mnt/lfs/run/* \
+    -e /mnt/lfs/home/* \
+    -e /mnt/lfs/usr/share/doc/* \
+    -e /mnt/lfs/usr/share/info/* \
+    -e /mnt/lfs/var/cache/* \
+    -e /mnt/lfs/var/log/* \
+    -e "*.tgz" "*.tar.gz"     "*.tar.xz" "*.tar.bz2" "*.tar" "*.gz" "*.xz" "*.bz2" "*.zip" "*.7z" "*.rar" "*.deb" "*.rpm" \
+    -e ".git" ".git/*" "*.o" "*.a"
