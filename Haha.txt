@@ -1,3 +1,9 @@
+sudo mount --bind /dev     /mnt/lfs/dev
+sudo mount --bind /dev/pts /mnt/lfs/dev/pts
+sudo mount --bind /proc    /mnt/lfs/proc
+sudo mount --bind /sys     /mnt/lfs/sys
+sudo mount --bind /run     /mnt/lfs/run
+
 # mksquashfs /mnt/lfs live/boot/filesystem.sfs \
     -b 1048576 \
     -comp zstd \
