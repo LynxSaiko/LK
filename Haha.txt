@@ -1,0 +1,25 @@
+sudo mksquashfs /mnt/lfs live/boot/filesystem.sfs \
+    -b 1048576 \
+    -comp zstd \
+    -Xdict-size 100% \
+    -Xbcj x86 \
+    -wildcards \
+    -e /mnt/lfs/{dev,proc,sys,run,tmp,root,home,usr/share/doc,usr/share/man,usr/share/info,var/cache,var/log}/* \
+    -e ".../*.tgz" \
+    -e ".../*.tar.gz" \
+    -e ".../*.tar.xz" \
+    -e ".../*.tar.bz2" \
+    -e ".../*.tar" \
+    -e ".../*.gz" \
+    -e ".../*.xz" \
+    -e ".../*.bz2" \
+    -e ".../*.zip" \
+    -e ".../*.7z" \
+    -e ".../*.rar" \
+    -e ".../*.deb" \
+    -e ".../*.rpm" \
+    -e ".../*.iso" \
+    -e ".../.git" \
+    -e ".../.git/*" \
+    -e ".../*.o" \          # object files dari compile (opsional, kalau masih ada)
+    -e ".../*.a" \          # static libraries
