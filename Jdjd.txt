@@ -1,0 +1,14 @@
+# Mencari live system di /home/lynx/squashfs
+echo "Mencari live media di /home/lynx/squashfs..."
+if [ -f "/home/lynx/squashfs/filesystem.squashfs" ]; then
+    echo "✓ Live system ditemukan di /home/lynx/squashfs"
+    
+    # Mount squashfs
+    mkdir -p /squashfs
+    mount -t squashfs /home/lynx/squashfs/filesystem.squashfs /squashfs
+else
+    echo "ERROR: Live system tidak ditemukan!"
+    echo "Masuk ke emergency shell..."
+    export PS1="(initrd) \w# "
+    exec /bin/bash
+fi
