@@ -63,6 +63,8 @@ mknod -m 666 dev/random c 1 8
 mknod -m 660 dev/sr0 b 11 0
 mknod -m 660 dev/loop0 b 7 0
 
+cp -a $LFS_MOUNT/lib/modules $(uname -r) $INITRD_TREE/lib/modules/
+
 # Buat Skrip init yang LEBIH SEDERHANA dan HANDAL
 cat << 'EOF' > $INITRD_TREE/init
 #!/bin/sh
