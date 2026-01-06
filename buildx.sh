@@ -127,8 +127,8 @@ cat << EOF > $ISO_ROOT/boot/grub/grub.cfg
 set default=0
 set timeout=5
 menuentry "LeakOS LiveCD" {
-    linux /boot/vmlinuz root=/dev/ram0 rw init=/bin/sh
-    initrd /boot/initrd.img
+    linux /boot/vmlinuz root=/dev/ram0 rw
+    initrd=/boot/initrd.img
 }
 EOF
 
