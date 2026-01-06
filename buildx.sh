@@ -47,8 +47,9 @@ sudo mknod -m 666 $INITRD_TREE/dev/null c 1 3
 
 # Buat Skrip init di dalam folder initrd_tree
 cat << 'EOF' > $INITRD_TREE/init
-export PATH=/usr/sbin:/usr/bin:/sbin:/bin
 #!/bin/sh
+export PATH=/usr/sbin:/usr/bin:/sbin:/bin
+
 mount -t devtmpfs devtmpfs /dev
 mount -t proc proc /proc
 mount -t sysfs sysfs /sys
