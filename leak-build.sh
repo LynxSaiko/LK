@@ -32,6 +32,7 @@ mksquashfs $LFS_MOUNT $ISO_ROOT/sources/rootfs.squashfs -comp zstd -all-root -no
     -e usr/share/doc \
     -e usr/share/info \
     -e usr/share/man \
+    -e usr/share/linux-5.10.195 \
     -e "*.git" \
     -e "*.zip" \
     -e "*.iso" \
