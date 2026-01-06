@@ -34,6 +34,8 @@ chmod +x $INITRD_TREE/bin/busybox
 for tool in sh mount mkdir echo cat cp ls switch_root sleep; do
     ln -sf busybox $INITRD_TREE/bin/$tool
 done
+cp -a $LFS_MOUNT/lib/modules $(uname -r) $INITRD_TREE/lib/modules/
+
 ln -sf ../bin/busybox $INITRD_TREE/sbin/switch_root
 
 # Buat Node Perangkat Dasar
