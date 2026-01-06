@@ -44,11 +44,13 @@ mksquashfs $LFS_MOUNT $ISO_ROOT/sources/rootfs.squashfs -comp zstd -all-root -no
 # 3. Siapkan Initramfs (Initrd)
 echo "[2/4] Menyiapkan Initramfs dengan BusyBox..."
 # Ambil BusyBox Static
-if [ -f "/bin/busybox" ]; then
-    cp /bin/busybox $INITRD_TREE/bin/
-else
-    wget https://busybox.net/downloads/binaries/1.35.0-x86_64-linux-musl/busybox -O $INITRD_TREE/bin/busybox
-fi
+#if [ -f "/bin/busybox" ]; then
+    #cp /bin/busybox $INITRD_TREE/bin/
+#else
+    #wget https://busybox.net/downloads/binaries/1.35.0-x86_64-linux-musl/busybox -O $INITRD_TREE/bin/busybox
+#fi
+wget https://busybox.net/downloads/binaries/1.35.0-x86_64-linux-musl/busybox -O $INITRD_TREE/bin/busybox
+
 chmod +x $INITRD_TREE/bin/busybox
 
 # Buat Symlinks penting
