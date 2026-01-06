@@ -27,7 +27,6 @@ mksquashfs $LFS_MOUNT $ISO_ROOT/sources/rootfs.squashfs -comp zstd -all-root -no
     -e dev \
     -e tmp \
     -e root/gnome \
-    -e mnt/media \
     -e usr/lib/python3.10 \
     -e var/log \
     -e var/cache \
