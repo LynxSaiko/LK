@@ -18,9 +18,30 @@ mkdir -p $INITRD_TREE/{bin,dev,etc,lib,lib64,mnt/media,mnt/squash,mnt/rw,mnt/mer
 # 2. Buat rootfs.squashfs
 echo "[1/4] Membuat SquashFS dari $LFS_MOUNT..."
 # Pastikan mount point media ada di dalam LFS agar sistem punya target mount nanti
-sudo mkdir -p $LFS_MOUNT/mnt/media
-sudo mksquashfs $LFS_MOUNT $ISO_ROOT/sources/rootfs.squashfs -comp xz -all-root -no-xattrs -e boot proc sys dev tmp root mnt/media usr/lib/python3.10 var/log var/cache home/* usr/share/doc usr/share/info usr/share/man "*.git" "*.zip" "*.tar" "*.iso" "*.deb"
-
+mkdir -p $LFS_MOUNT/mnt/media
+#sudo mksquashfs $LFS_MOUNT $ISO_ROOT/sources/rootfs.squashfs -comp xz -all-root -no-xattrs -e boot proc sys dev tmp mnt/media usr/lib/python3.10 var/log var/cache home/* usr/share/doc usr/share/info usr/share/man "*.git" "*.zip" "*.tar" "*.iso" "*.deb"
+mksquashfs $LFS_MOUNT $ISO_ROOT/sources/rootfs.squashfs -comp zstd -all-root -no-xattrs \
+    -e boot \
+    -e proc \
+    -e sys \
+    -e dev \
+    -e tmp \
+    -e root/gnome \
+    -e mnt/media \
+    -e usr/lib/python3.10 \
+    -e var/log \
+    -e var/cache \
+    -e home/* \
+    -e usr/share/doc \
+    -e usr/share/info \
+    -e usr/share/man \
+    -e "*.git" \
+    -e "*.zip" \
+    -e "*.iso" \
+    -e "*.xz" \
+    -e "*.deb" \
+    -e "*.tar"
+    
 # 3. Siapkan Initramfs (Initrd)
 echo "[2/4] Menyiapkan Initramfs dengan BusyBox..."
 # Ambil BusyBox Static
