@@ -30,10 +30,12 @@ else
 fi
 chmod +x $INITRD_TREE/bin/busybox
 
-# Buat Symlinks BusyBox
-for tool in sh mount mkdir echo cat cp ls switch_root sleep; do
-    ln -sf busybox $INITRD_TREE/bin/$tool
+# Buat Symlinks penting
+for tool in sh mount mkdir echo cat cp ls switch_root sleep modprobe vi; do
+    $INITRD_TREE/bin/busybox --install -s $INITRD_TREE/bin
 done
+
+
 cp -a $LFS_MOUNT/lib/modules $(uname -r) $INITRD_TREE/lib/modules/
 
 ln -sf ../bin/busybox $INITRD_TREE/sbin/switch_root
