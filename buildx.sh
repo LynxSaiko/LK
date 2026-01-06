@@ -11,6 +11,7 @@ INITRD_TREE="$WORK_DIR/initrd_tree" # Folder struktur initramfs
 echo "--- Memulai Proses Pembuatan LFS LiveCD ---"
 
 # 1. Persiapan Folder Kerja
+mkdir -p $WORD_DIR
 mkdir -p $ISO_ROOT/{boot/grub,sources}
 mkdir -p $INITRD_TREE/{bin,dev,etc,lib,lib64,mnt/media,mnt/squash,mnt/rw,mnt/merged,proc,sbin,sys}
 
