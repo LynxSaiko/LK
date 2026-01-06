@@ -151,6 +151,7 @@ EOF
 
 # Pastikan init executable
 chmod +x $INITRD_TREE/init
+chmod +x $INITRD_TREE/bin/busybox
 
 # 4. Packing Initrd dengan benar
 echo "[3/4] Membungkus Initrd..."
