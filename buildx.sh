@@ -13,7 +13,7 @@ echo "--- Memulai Proses Pembuatan LFS LiveCD ---"
 # 1. Persiapan Folder Kerja
 mkdir -p $WORD_DIR
 mkdir -p $ISO_ROOT/{boot/grub,sources}
-mkdir -p $INITRD_TREE/{bin,dev,etc,lib,lib64,mnt/media,mnt/squash,mnt/rw,mnt/merged,proc,sbin,sys}
+mkdir -p $INITRD_TREE/{bin,dev,etc,lib,lib64,mnt/media,mnt/squash,mnt/rw,mnt/merged,/mnt/rw/work,/mnt/rw/upper,proc,sbin,sys}
 
 # 2. Buat rootfs.squashfs
 echo "[1/4] Membuat SquashFS dari $LFS_MOUNT..."
@@ -72,7 +72,12 @@ mount --move /proc /mnt/merged/proc
 mount --move /sys /mnt/merged/sys
 mount --move /mnt/media /mnt/merged/mnt/media 2>/dev/null
 
-exec switch_root /mnt/merged /sbin/init
+#exec switch_root /mnt/merged /sbin/init
+exec switch_root /mnt/merged /sbin/init \
+    || exec switch_root /mnt/merged /etc/init \
+    || exec switch_root /mnt/merged /bin/init \
+    || exec switch_root /mnt/merged /bin/sh \
+    || echo "FATAL: Tidak ada init yang bisa dijalankan!" && exec /bin/sh
 EOF
 
 chmod +x $INITRD_TREE/init
