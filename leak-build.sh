@@ -4,7 +4,7 @@
 # KONFIGURASI - SESUAIKAN JALUR DI SINI
 # ==========================================================
 LFS_MOUNT="/mnt/lfs"               # Lokasi mount sistem LFS 11.2 Anda
-WORK_DIR="$HOME/LeakOS-Build"    # Folder pusat pengerjaan
+WORK_DIR="~/LeakOS-Build"    # Folder pusat pengerjaan
 ISO_ROOT="$WORK_DIR/iso_root"       # Folder struktur akhir ISO
 INITRD_TREE="$WORK_DIR/initrd_tree" # Folder struktur initramfs
 SQUASH_SOURCE="$ISO_ROOT/sources/rootfs.squashfs"
