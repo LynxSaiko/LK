@@ -7,7 +7,7 @@ LFS_MOUNT="/mnt/lfs"               # Lokasi mount sistem LFS 11.2 Anda
 WORK_DIR="$HOME/LeakOS-Build"    # Folder pusat pengerjaan
 ISO_ROOT="$WORK_DIR/iso_root"       # Folder struktur akhir ISO
 INITRD_TREE="$WORK_DIR/initrd_tree" # Folder struktur initramfs
-
+SQUASH_SOURCE="$ISO_ROOT/sources/rootfs.squashfs"
 echo "--- Memulai Proses Pembuatan LFS LiveCD ---"
 
 # 1. Persiapan Folder Kerja
