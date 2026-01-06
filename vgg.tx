@@ -1,0 +1,42 @@
+do_mount_root()
+{
+   # 1. Buat titik mount yang diperlukan
+   mkdir -p /.medium      # Tempat partisi fisik (sda2)
+   mkdir -p /.squash      # Tempat file squashfs di-mount
+   mkdir -p /.rw          # Tempat penyimpanan RAM (writable)
+   mkdir -p /.root        # Titik akhir root sistem (merged)
+
+   # 2. Mount partisi fisik (Media Booting)
+   # Menggunakan -L LEAKOS jika anda memberi label pada partisi/ISO
+   # Jika tidak, gunakan /dev/sda2
+   if ! mount -n -t ext4 /dev/sda2 /.medium; then
+      echo "KESALAHAN: Tidak dapat menemukan media booting di /dev/sda2"
+      problem
+   fi
+
+   # 3. Mount file SquashFS (Read-Only)
+   if ! mount -n -t squashfs -o loop /.medium/sources/rootfs.squashfs /.squash; then
+      echo "KESALAHAN: rootfs.squashfs tidak ditemukan di /sources/"
+      problem
+   fi
+
+   # 4. Siapkan RAM agar sistem bisa ditulisi (Writable)
+   # Kita gunakan tmpfs (RAM) untuk menampung perubahan file
+   mount -n -t tmpfs tmpfs /.rw
+   mkdir -p /.rw/upper
+   mkdir -p /.rw/work
+
+   # 5. Gabungkan SquashFS dan RAM menggunakan OverlayFS
+   # lowerdir = file sistem asli (read-only)
+   # upperdir = tempat menyimpan perubahan (di RAM)
+   if ! mount -n -t overlay overlay -o lowerdir=/.squash,upperdir=/.rw/upper,workdir=/.rw/work /.root; then
+      echo "KESALAHAN: Gagal membuat OverlayFS"
+      problem
+   fi
+
+   # 6. Pindahkan mount medium ke dalam root agar tetap bisa diakses jika perlu
+   mkdir -p /.root/mnt/media
+   mount --move /.medium /.root/mnt/media
+
+   echo "--- LeakOS Live Mode Berhasil Dimuat ---"
+}
