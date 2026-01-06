@@ -61,7 +61,7 @@ done
 
 cp -a $LFS_MOUNT/lib/modules $(uname -r) $INITRD_TREE/lib/modules/
 
-ln -sf ../bin/busybox $INITRD_TREE/sbin/switch_root
+ln -sf $INITRD_TREE/bin/busybox $INITRD_TREE/sbin/switch_root
 
 # Buat Node Perangkat Dasar
 mknod -m 600 $INITRD_TREE/dev/console c 5 1
