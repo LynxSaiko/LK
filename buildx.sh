@@ -18,8 +18,7 @@ mkdir -p $INITRD_TREE/{bin,dev,etc,lib,lib64,mnt/media,mnt/squash,mnt/rw,mnt/mer
 echo "[1/4] Membuat SquashFS dari $LFS_MOUNT..."
 # Pastikan mount point media ada di dalam LFS agar sistem punya target mount nanti
 sudo mkdir -p $LFS_MOUNT/mnt/media
-sudo mksquashfs $LFS_MOUNT $ISO_ROOT/sources/rootfs.squashfs -comp xz -all-root -e boot proc sys dev tmp mnt/media usr/lib/python3.10 var/log var/cache home/*
-
+sudo mksquashfs $LFS_MOUNT $ISO_ROOT/sources/rootfs.squashfs -comp xz -all-root -e boot proc sys dev tmp root mnt/media usr/lib/python3.10 var/log var/cache home/* usr/share/doc usr/share/info usr/share/man
 # 3. Siapkan Initramfs (Initrd)
 echo "[2/4] Menyiapkan Initramfs dengan BusyBox..."
 # Ambil BusyBox Static
@@ -85,7 +84,7 @@ cd $WORK_DIR
 # 4. Konfigurasi GRUB & Salin Kernel
 echo "[4/4] Finalisasi Struktur ISO..."
 # Salin kernel dari LFS ke ISO (Sesuaikan nama vmlinuz Anda)
-cp $LFS_MOUNT/boot/vmlinuz-$ISO_ROOT/boot/vmlinuz
+cp $LFS_MOUNT/boot/vmlinuz $ISO_ROOT/boot/vmlinuz
 
 cat << EOF > $ISO_ROOT/boot/grub/grub.cfg
 set default=0
