@@ -164,11 +164,9 @@ echo "[4/4] Finalisasi Struktur ISO..."
 # Salin kernel - coba beberapa kemungkinan lokasi
 if [ -f "$LFS_MOUNT/boot/vmlinuz" ]; then
     cp $LFS_MOUNT/boot/vmlinuz $ISO_ROOT/boot/vmlinuz
-elif [ -f "$LFS_MOUNT/boot/vmlinuz-$(uname -r)" ]; then
-    cp $LFS_MOUNT/boot/vmlinuz-$(uname -r) $ISO_ROOT/boot/vmlinuz
 else
     echo "WARNING: Kernel tidak ditemukan, cari manual..."
-    find $LFS_MOUNT/boot -name "vmlinuz*" -exec cp {} $ISO_ROOT/boot/vmlinuz \; 2>/dev/null
+    find $LFS_MOUNT/boot -name "vmlinuz" -exec cp {} $ISO_ROOT/boot/vmlinuz \; 2>/dev/null
 fi
 
 # Buat GRUB config dengan lebih banyak opsi
