@@ -64,10 +64,10 @@ ln -sf ../bin/busybox $INITRD_TREE/sbin/switch_root
 # Buat Node Perangkat Dasar
 mknod -m 600 $INITRD_TREE/dev/console c 5 1
 mknod -m 666 $INITRD_TREE/dev/null c 1 3
-mknod -m 666 "$INITRD_TREE/dev/zero" c 1 5
-mknod -m 666 "$INITRD_TREE/dev/random" c 1 8
-mknod -m 660 "$INITRD_TREE/dev/sr0" b 11 0
-mknod -m 660 "$INITRD_TREE/dev/loop0" b 7 0
+mknod -m 666 $INITRD_TREE/dev/zero c 1 5
+mknod -m 666 $INITRD_TREE/dev/random c 1 8
+mknod -m 660 $INITRD_TREE/dev/sr0 b 11 0
+mknod -m 660 $INITRD_TREE/dev/loop0 b 7 0
 
 export PATH=/usr/sbin:/usr/bin:/sbin:/bin
 
@@ -124,7 +124,7 @@ cp $LFS_MOUNT/boot/vmlinuz $ISO_ROOT/boot/vmlinuz
 cat << EOF > $ISO_ROOT/boot/grub/grub.cfg
 set default=0
 set timeout=5
-menuentry "LFS 11.2 LiveCD" {
+menuentry "LeakOS LiveCD" {
     linux /boot/vmlinuz root=/dev/ram0 rw init=/bin/sh
     initrd /boot/initrd.img
 }
