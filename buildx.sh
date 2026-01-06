@@ -64,12 +64,11 @@ ln -sf ../bin/busybox $INITRD_TREE/sbin/switch_root
 # Buat Node Perangkat Dasar
 sudo mknod -m 600 $INITRD_TREE/dev/console c 5 1
 sudo mknod -m 666 $INITRD_TREE/dev/null c 1 3
+export PATH=/usr/sbin:/usr/bin:/sbin:/bin
 
 # Buat Skrip init di dalam folder initrd_tree
 cat << 'EOF' > $INITRD_TREE/init
 #!/bin/busybox sh
-export PATH=/usr/sbin:/usr/bin:/sbin:/bin
-
 mount -t devtmpfs devtmpfs /dev
 mount -t proc proc /proc
 mount -t sysfs sysfs /sys
