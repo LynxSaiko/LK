@@ -80,12 +80,14 @@ exec switch_root /mnt/merged /sbin/init \
     || echo "FATAL: Tidak ada init yang bisa dijalankan!" && exec /bin/sh
 EOF
 
-chmod +x $INITRD_TREE/init
+
 
 # Packing Initrd
 echo "[3/4] Membungkus Initrd..."
 cd $INITRD_TREE
-find . | cpio -o -H newc | gzip > $ISO_ROOT/boot/initrd.img
+chmod +x init
+#find . | cpio -o -H newc | gzip > $ISO_ROOT/boot/initrd.img
+find . -print0 | cpio --null -ov --format=newc | gzip -9 > $ISO_ROOT/boot/initrd.img
 cd $WORK_DIR
 
 # 4. Konfigurasi GRUB & Salin Kernel
@@ -97,7 +99,7 @@ cat << EOF > $ISO_ROOT/boot/grub/grub.cfg
 set default=0
 set timeout=5
 menuentry "LFS 11.2 LiveCD" {
-    linux /boot/vmlinuz root=/dev/ram0 rw
+    linux /boot/vmlinuz root=/dev/ram0 rw init=/bin/sh
     initrd /boot/initrd.img
 }
 EOF
