@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LeakOS - BlackArch Linux Security Conference</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Inter:wght@300;400;500;600;700&display=swap">
+    <style>
+        :root {
+            --blackarch-red: #ff2a2a;
+            --blackarch-dark: #0a0a0a;
+            --blackarch-gray: #1a1a1a;
+            --blackarch-light: #e0e0e0;
+            --terminal-green: #00ff00;
+            --hacker-purple: #8a2be2;
+            --accent-blue: #2a7fff;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: var(--blackarch-dark);
+            color: var(--blackarch-light);
+            line-height: 1.6;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(255, 42, 42, 0.05) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(42, 127, 255, 0.05) 0%, transparent 20%);
+            min-height: 100vh;
+            font-size: 16px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* Header & Navigation */
+        header {
+            background-color: rgba(10, 10, 10, 0.95);
+            border-bottom: 1px solid var(--blackarch-red);
+            padding: 12px 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+        
+        .nav-container {
+            height: 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .logo-icon {
+            color: var(--blackarch-red);
+            font-size: clamp(22px, 3vw, 26px);
+        }
+        
+        .logo-text {
+            font-family: 'JetBrains Mono', monospace, 'Courier New', Courier, monospace;
+            font-size: clamp(20px, 3.5vw, 22px);
+            font-weight: 700;
+            letter-spacing: 1px;
+            background: linear-gradient(90deg, var(--blackarch-red), var(--hacker-purple));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .logo-text span {
+            color: var(--terminal-red);
+        }
+        
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: clamp(10px, 2vw, 15px);
+        }
+        
+        nav a {
+            color: var(--blackarch-light);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: clamp(13px, 1.4vw, 14px);
+            padding: clamp(5px, 0.8vw, 6px) clamp(8px, 1.2vw, 10px);
+            border-radius: 4px;
+            transition: all 0.3s;
+            position: relative;
+        }
+        
+        nav a:hover {
+            color: var(--blackarch-red);
+            background-color: rgba(255, 42, 42, 0.1);
+        }
+        
+        nav a.active {
+            color: var(--terminal-green);
+            background-color: rgba(0, 255, 0, 0.1);
+        }
+        
+        /* Hero Section */
+        .hero {
+            padding: clamp(40px, 10vw, 80px) 0 clamp(30px, 8vw, 60px);
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 42, 42, 0.2);
+        }
+        
+        .hero-subtitle {
+            color: var(--terminal-green);
+            font-family: 'JetBrains Mono', monospace, 'Courier New', Courier, monospace;
+            font-size: clamp(14px, 2vw, 18px);
+            letter-spacing: clamp(1px, 0.5vw, 2px);
+            margin-bottom: clamp(10px, 2vw, 15px);
+            text-transform: uppercase;
+        }
+        
+        .hero-title {
+            font-size: clamp(28px, 5vw, 48px);
+            font-weight: 800;
+            margin-bottom: clamp(15px, 3vw, 20px);
+            background: linear-gradient(90deg, var(--blackarch-red), var(--accent-blue));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            line-height: 1.2;
+        }
+        
+        .hero-description {
+            font-size: clamp(14px, 2vw, 18px);
+            max-width: 800px;
+            margin: 0 auto clamp(20px, 4vw, 30px);
+            color: #b0b0b0;
+        }
+        
+        .hero-date {
+            display: inline-block;
+            background-color: rgba(255, 42, 42, 0.2);
+            color: var(--blackarch-red);
+            padding: clamp(8px, 2vw, 10px) clamp(15px, 3vw, 25px);
+            border-radius: 50px;
+            font-family: 'JetBrains Mono', monospace, 'Courier New', Courier, monospace;
+            font-weight: 600;
+            font-size: clamp(14px, 2vw, 18px);
+            margin-bottom: clamp(20px, 4vw, 30px);
+            border: 1px solid rgba(255, 42, 42, 0.4);
+        }
+        
+        .hero-actions {
+            display: flex;
+            justify-content: center;
+            gap: clamp(15px, 2vw, 20px);
+            margin-top: clamp(20px, 4vw, 30px);
+            flex-wrap: wrap;
+        }
+        
+        .cta-primary {
+            background: linear-gradient(90deg, var(--blackarch-red), #ff5500);
+            color: white;
+            padding: clamp(10px, 2vw, 14px) clamp(20px, 3vw, 32px);
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: clamp(14px, 1.8vw, 16px);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s;
+        }
+        
+        .cta-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(255, 42, 42, 0.4);
+        }
+        
+        .cta-secondary {
+            background-color: transparent;
+            color: var(--blackarch-light);
+            padding: clamp(10px, 2vw, 14px) clamp(20px, 3vw, 32px);
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: clamp(14px, 1.8vw, 16px);
+            border: 1px solid #374151;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s;
+        }
+        
+        .cta-secondary:hover {
+            border-color: var(--accent-blue);
+            color: var(--accent-blue);
+            transform: translateY(-3px);
+        }
+        
+        /* Main Content */
+        .main-content {
+            padding: clamp(30px, 8vw, 60px) 0;
+        }
+        
+        .section-title {
+            font-size: clamp(20px, 3vw, 28px);
+            font-weight: 700;
+            margin-bottom: clamp(25px, 5vw, 40px);
+            position: relative;
+            padding-bottom: clamp(10px, 2vw, 15px);
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: clamp(40px, 6vw, 60px);
+            height: 3px;
+            background-color: var(--blackarch-red);
+        }
+        
+        .section-subtitle {
+            color: var(--terminal-green);
+            font-family: 'JetBrains Mono', monospace, 'Courier New', Courier, monospace;
+            font-size: clamp(12px, 1.5vw, 14px);
+            letter-spacing: clamp(0.5px, 0.3vw, 1px);
+            text-transform: uppercase;
+            margin-bottom: clamp(8px, 1.5vw, 10px);
+        }
+        
+        /* Cards Grid */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(min(100%, 350px), 1fr));
+            gap: clamp(20px, 3vw, 30px);
+            margin-top: clamp(20px, 4vw, 30px);
+        }
+        
+        .card {
+            background-color: var(--blackarch-gray);
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 42, 42, 0.1);
+            transition: all 0.3s;
+            height: 100%;
+        }
+        
+        .card:hover {
+            transform: translateY(-10px);
+            border-color: var(--blackarch-red);
+            box-shadow: 0 15px 30px rgba(255, 42, 42, 0.1);
+        }
+        
+        .card-header {
+            padding: clamp(15px, 3vw, 25px) clamp(15px, 3vw, 25px) clamp(10px, 2vw, 15px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .card-icon {
+            color: var(--blackarch-red);
+            font-size: clamp(20px, 3vw, 24px);
+            margin-bottom: clamp(10px, 2vw, 15px);
+        }
+        
+        .card-title {
+            font-size: clamp(16px, 2.2vw, 20px);
+            font-weight: 600;
+            margin-bottom: clamp(8px, 1.5vw, 10px);
+        }
+        
+        .card-body {
+            padding: clamp(15px, 2.5vw, 20px) clamp(15px, 3vw, 25px);
+        }
+        
+        .card-description {
+            color: #b0b0b0;
+            margin-bottom: clamp(15px, 2.5vw, 20px);
+            font-size: clamp(14px, 1.6vw, 16px);
+        }
+        
+        .card-features {
+            list-style: none;
+            margin-bottom: clamp(15px, 2.5vw, 20px);
+        }
+        
+        .card-features li {
+            margin-bottom: clamp(6px, 1vw, 8px);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: clamp(13px, 1.5vw, 15px);
+        }
+        
+        .card-features i {
+            color: var(--terminal-green);
+            font-size: clamp(10px, 1.2vw, 12px);
+        }
+        
+        .card-footer {
+            padding: clamp(12px, 2vw, 15px) clamp(15px, 3vw, 25px);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .card-date {
+            font-family: 'JetBrains Mono', monospace, 'Courier New', Courier, monospace;
+            font-size: clamp(11px, 1.3vw, 13px);
+            color: var(--accent-blue);
+        }
+        
+        .card-btn {
+            background-color: rgba(255, 42, 42, 0.2);
+            color: var(--blackarch-red);
+            border: none;
+            padding: clamp(6px, 1.2vw, 8px) clamp(12px, 2vw, 18px);
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'JetBrains Mono', monospace, 'Courier New', Courier, monospace;
+            font-size: clamp(11px, 1.3vw, 13px);
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .card-btn:hover {
+            background-color: rgba(255, 42, 42, 0.3);
+        }
+        
+        /* Terminal Section */
+        .terminal-section {
+            /*background-color: rgba(0, 0, 0, 0.7);*/
+         
+    background: linear-gradient(
+        180deg,
+        #050505,
+        #090909
+    );
+    border: 1px solid rgba(255,42,42,.35);
+    box-shadow:
+        inset 0 0 40px rgba(255,42,42,.08),
+        0 0 30px rgba(0,0,0,.9);
+
+margin: clamp(30px, 8vw, 60px) 0; overflow: hidden;
+           
+        }
+        
+        .terminal-header {
+            background-color: rgba(20, 20, 20, 0.9);
+            padding: clamp(12px, 2vw, 15px) clamp(15px, 3vw, 20px);
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid rgba(0, 255, 0, 0.1);
+        }
+
+
+
+
+
+
+
+        
+        .terminal-dots {
+            display: flex;
+            gap: clamp(6px, 1vw, 8px);
+        }
+        
+        .terminal-dot {
+            width: clamp(8px, 1.5vw, 12px);
+            height: clamp(8px, 1.5vw, 12px);
+            border-radius: 50%;
+        }
+        
+        .terminal-dot.red {
+            background-color: #ff5f56;
+        }
+        
+        .terminal-dot.yellow {
+            background-color: #ffbd2e;
+        }
+        
+        .terminal-dot.green {
+            background-color: #27c93f;
+        }
+        
+        .terminal-title {
+            margin-left: clamp(10px, 2vw, 15px);
+            font-family: 'JetBrains Mono', monospace, 'Courier New', Courier, monospace;
+            font-size: clamp(12px, 1.5vw, 14px);
+            color: var(--terminal-green);
+        }
+        
+        .terminal-body {
+            padding: clamp(15px, 3vw, 25px);
+            font-family: 'JetBrains Mono', monospace, 'Courier New', Courier, monospace;
+            font-size: clamp(13px, 1.6vw, 15px);
+            line-height: 1.8;
+        }
+        
+        .terminal-line {
+            margin-bottom: 10px;
+        }
+        
+        .terminal-prompt {
+            color: var(--accent-blue);
+        }
+        
+        .terminal-command {
+            color: var(--terminal-green);
+        }
+        
+        .terminal-output {
+            color: #b0b0b0;
+        }
+        
+        .terminal-path {
+            color: var(--hacker-purple);
+        }
+        
+        /* Stats Section */
+        .stats-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(150px, 100%), 1fr));
+            gap: clamp(15px, 3vw, 25px);
+            margin: clamp(30px, 8vw, 60px) 0;
+        }
+        
+        .stat-card {
+            background-color: rgba(255, 42, 42, 0.05);
+            border-radius: 8px;
+            padding: clamp(20px, 4vw, 30px);
+            text-align: center;
+            border: 1px solid rgba(255, 42, 42, 0.1);
+            transition: all 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--blackarch-red);
+        }
+        
+        .stat-number {
+            font-size: clamp(28px, 5vw, 42px);
+            font-weight: 800;
+            color: var(--blackarch-red);
+            margin-bottom: clamp(8px, 1.5vw, 10px);
+            font-family: 'JetBrains Mono', monospace, 'Courier New', Courier, monospace;
+        }
+        
+        .stat-label {
+            font-size: clamp(13px, 1.6vw, 15px);
+            color: #b0b0b0;
+        }
+        
+        /* Footer */
+        footer {
+            background-color: rgba(0, 0, 0, 0.9);
+            border-top: 1px solid rgba(255, 42, 42, 0.2);
+            padding: clamp(30px, 8vw, 60px) 0 clamp(20px, 4vw, 30px);
+            margin-top: clamp(30px, 8vw, 60px);
+        }
+        
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: clamp(20px, 4vw, 40px);
+            margin-bottom: clamp(25px, 5vw, 40px);
+        }
+        
+        .footer-section h3 {
+            font-size: clamp(16px, 2.2vw, 18px);
+            margin-bottom: clamp(15px, 3vw, 20px);
+            color: var(--blackarch-red);
+        }
+        
+        .footer-links {
+            list-style: none;
+        }
+        
+        .footer-links li {
+            margin-bottom: clamp(8px, 1.5vw, 12px);
+            font-size: clamp(14px, 1.6vw, 16px);
+        }
+        
+        .footer-links a {
+            color: #b0b0b0;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .footer-links a:hover {
+            color: var(--blackarch-red);
+        }
+        
+        .footer-social {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .social-icon {
+            width: clamp(32px, 4vw, 40px);
+            height: clamp(32px, 4vw, 40px);
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #b0b0b0;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        
+        .social-icon:hover {
+            background-color: var(--blackarch-red);
+            color: white;
+            transform: translateY(-3px);
+        }
+        
+        .footer-bottom {
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            padding-top: clamp(20px, 4vw, 30px);
+            text-align: center;
+            color: #666;
+            font-size: clamp(12px, 1.5vw, 14px);
+        }
+        
+        /* BlackArch Badge */
+        .blackarch-badge {
+            display: inline-block;
+            background-color: rgba(255, 42, 42, 0.1);
+            color: var(--blackarch-red);
+            padding: clamp(4px, 0.8vw, 5px) clamp(8px, 1.5vw, 12px);
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace, 'Courier New', Courier, monospace;
+            font-size: clamp(10px, 1.2vw, 12px);
+            font-weight: 600;
+            letter-spacing: 1px;
+            border: 1px solid rgba(255, 42, 42, 0.3);
+        }
+        
+        /* Responsive Breakpoints */
+        @media (max-width: 768px) {
+            .nav-container {
+                flex-direction: column;
+                height: auto;
+                gap: 15px;
+                padding: 10px 0;
+            }
+            .logo-text {
+            font-size: 26px;
+           }
+            nav ul {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 8px;
+            }
+            
+            nav a {
+                font-size: 16px;
+                padding: 5px 8px;
+            }
+            
+            .hero-actions {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .terminal-body {
+                padding: 15px;
+                font-size: 13px;
+                overflow-x: auto;
+            }
+            
+            body {
+                font-size: 15px;
+            }
+            
+            .hero-title {
+                font-size: 32px;
+            }
+            
+            .section-title {
+                font-size: 24px;
+            }
+            
+            .card-title {
+                font-size: 18px;
+            }
+            
+            .footer-content {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .hero-title {
+                font-size: 26px;
+            }
+            
+            .hero-description {
+                font-size: 14px;
+            }
+            
+            .section-title {
+                font-size: 20px;
+            }
+            
+            .card-title {
+                font-size: 16px;
+            }
+            
+            .stat-number {
+                font-size: 32px;
+            }
+            
+            .terminal-body {
+                font-size: 11px;
+            }
+            
+            .hero-actions a {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+        
+        /* Fallback fonts untuk semua elemen */
+        * {
+            font-family: inherit;
+        }
+        
+        /* Pastikan semua teks menggunakan font yang sesuai dengan perangkat */
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        
+        code, pre, .terminal-body, .card-date, .blackarch-badge, .hero-date, .hero-subtitle, .section-subtitle {
+            font-family: 'JetBrains Mono', 'Courier New', Courier, monospace;
+        }
+        
+        /* Optimasi untuk tablet */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .hero-title {
+                font-size: 40px;
+            }
+            
+            .section-title {
+                font-size: 26px;
+            }
+            
+            .cards-grid {
+                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            }
+            
+            nav a {
+                font-size: 13px;
+                padding: 6px 9px;
+            }
+        }
+        
+        /* Kursor berkedip di terminal */
+        .cursor {
+            display: inline-block;
+            width: 8px;
+            height: 17px;
+            background-color: var(--terminal-green);
+            animation: blink 1s infinite;
+            margin-left: 5px;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <div class="nav-container">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <i class=""></i>
+                    </div>
+                    <div class="logo-text">Lazy <span>Framework</span></div>
+                </div>
+                
+                <nav>
+                    <ul>
+                        <li><a href="#" class="active">Home</a></li>
+                        <li><a href="#">CTF</a></li>
+                        <li><a href="#">Forums</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-subtitle">BLACKARCH LINUX SECURITY CONFERENCE</div>
+            <h1 class="hero-title">Penetration Testing & Security Research</h1>
+            <p class="hero-description">
+                LeakOS adalah komunitas security berbasis BlackArch Linux yang fokus pada penetration testing, 
+                vulnerability research, dan tool development untuk keamanan sistem.
+            </p>
+            <div class="hero-date">APRIL 28-30, 2026 • MARINA BAY SANDS</div>
+            
+            <div class="hero-actions">
+                <a href="#" class="cta-primary">
+                    <i class="fas fa-terminal"></i> Join CTF Competition
+                </a>
+                <a href="#" class="cta-secondary">
+                    <i class="fas fa-download"></i> Download BlackArch ISO
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div class="main-content">
+            <!-- About Section -->
+            <section>
+                <div class="section-subtitle">About LeakOS</div>
+                <h2 class="section-title">BlackArch Linux Security Community</h2>
+                
+                <div class="cards-grid">
+                    <!-- Card 1 -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon">
+                                <i class="fas fa-bug"></i>
+                            </div>
+                            <h3 class="card-title">Penetration Testing</h3>
+                            <span class="blackarch-badge">BLACKARCH TOOLS</span>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-description">
+                                Koleksi 3000+ tools penetration testing dari BlackArch repository untuk 
+                                vulnerability assessment, exploitation, dan post-exploitation.
+                            </p>
+                            <ul class="card-features">
+                                <li><i class="fas fa-check"></i> Network penetration testing</li>
+                                <li><i class="fas fa-check"></i> Web application security</li>
+                                <li><i class="fas fa-check"></i> Wireless network auditing</li>
+                                <li><i class="fas fa-check"></i> Forensic analysis tools</li>
+                            </ul>
+                        </div>
+                        <div class="card-footer">
+                            <span class="card-date">Updated daily</span>
+                            <button class="card-btn">Explore Tools</button>
+                        </div>
+                    </div>
+                    
+
+                    <!-- Card 2 -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <h3 class="card-title">Security Training</h3>
+                            <span class="blackarch-badge">WORKSHOPS & CTF</span>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-description">
+                                Hands-on training dan workshop menggunakan BlackArch Linux untuk 
+                                mempelajari teknik penetration testing dan security research.
+                            </p>
+                            <ul class="card-features">
+                                <li><i class="fas fa-check"></i> BlackArch installation & setup</li>
+                                <li><i class="fas fa-check"></i> Tool usage & methodology</li>
+                                <li><i class="fas fa-check"></i> Real-world penetration testing</li>
+                                <li><i class="fas fa-check"></i> CTF challenges & solutions</li>
+                            </ul>
+                        </div>
+                        <div class="card-footer">
+                            <span class="card-date">Apr 26-27, 2026</span>
+                            <button class="card-btn">View Schedule</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Card 3 -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon">
+                                <i class="fas fa-code"></i>
+                            </div>
+                            <h3 class="card-title">Tool Development</h3>
+                            <span class="blackarch-badge">OPEN SOURCE</span>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-description">
+                                Berkontribusi pada pengembangan tools keamanan open source dan 
+                                BlackArch repository. Submit tools Anda untuk di-review dan di-package.
+                            </p>
+                            <ul class="card-features">
+                                <li><i class="fas fa-check"></i> Package submission guidelines</li>
+                                <li><i class="fas fa-check"></i> Tool testing & validation</li>
+                                <li><i class="fas fa-check"></i> PKGBUILD creation</li>
+                                <li><i class="fas fa-check"></i> Repository maintenance</li>
+                            </ul>
+                        </div>
+                        <div class="card-footer">
+                            <span class="card-date">Open for contributions</span>
+                            <button class="card-btn">Contribute</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Terminal Section -->
+            <section class="terminal-section">
+                <div class="terminal-header">
+                    <div class="terminal-dots">
+                        <div class="terminal-dot red"></div>
+                        <div class="terminal-dot yellow"></div>
+                        <div class="terminal-dot green"></div>
+                    </div>
+                    <div class="terminal-title">leakos@blackarch:~</div>
+                </div>
+                <div class="terminal-body">
+                    <div class="terminal-line">
+                        <span class="terminal-prompt">[leakos@blackarch ~]$</span> 
+                        <span class="terminal-command">sudo pacman -S blackarch</span>
+                    </div>
+                    <div class="terminal-line terminal-output">
+                        :: There are 3054 members in group blackarch:
+                    </div>
+                    <div class="terminal-line terminal-output">
+                        :: Repository blackarch
+                    </div>
+                    <div class="terminal-line terminal-output">
+                           1) blackarch-config-git      2) blackarch-devtools-git   3) blackarch-menus
+                    </div>
+                    <div class="terminal-line">
+                        <span class="terminal-prompt">[leakos@blackarch ~]$</span> 
+                        <span class="terminal-command">searchsploit apache 2.4</span>
+                    </div>
+                    <div class="terminal-line terminal-output">
+                        Exploit Title | Path
+                    </div>
+                    <div class="terminal-line terminal-output">
+                        ---------------------------------------- | ----------------------
+                    </div>
+                    <div class="terminal-line terminal-output">
+                        Apache 2.4.x - 'apache2ctl' Remote Code Execution | linux/remote/42741.rb
+                    </div>
+                    <div class="terminal-line">
+                        <span class="terminal-prompt">[leakos@blackarch ~]$</span> 
+                        <span class="terminal-command">cd <span class="terminal-path">/usr/share/leakos-ctf</span></span>
+                    </div>
+                    <div class="terminal-line">
+                        <span class="terminal-prompt">[leakos@blackarch leakos-ctf]$</span> 
+                        <span class="terminal-command">./start_challenge.sh</span>
+                        <span class="cursor">▊</span>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Stats Section -->
+            <section>
+                <div class="section-subtitle">BlackArch by Numbers</div>
+                <h2 class="section-title">Community Statistics</h2>
+                
+                <div class="stats-section">
+                    <div class="stat-card">
+                        <div class="stat-number">3,054</div>
+                        <div class="stat-label">Security Tools</div>
+                        <p style="margin-top: 10px; font-size: clamp(12px, 1.5vw, 14px); color: #888;">in BlackArch repository</p>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-number">24/7</div>
+                        <div class="stat-label">Active Community</div>
+                        <p style="margin-top: 10px; font-size: clamp(12px, 1.5vw, 14px); color: #888;">IRC, Discord & Forums</p>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-number">15+</div>
+                        <div class="stat-label">CTF Categories</div>
+                        <p style="margin-top: 10px; font-size: clamp(12px, 1.5vw, 14px); color: #888;">Web, Crypto, Pwn, Reverse, etc</p>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-number">500+</div>
+                        <div class="stat-label">Active Researchers</div>
+                        <p style="margin-top: 10px; font-size: clamp(12px, 1.5vw, 14px); color: #888;">Contributing to tools & docs</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+
+
+
+
+
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>LeakOS</h3>
+                    <p style="color: #b0b0b0; margin-bottom: 20px; font-size: clamp(14px, 1.6vw, 16px);">
+                        BlackArch Linux Security Community focused on penetration testing, 
+                        vulnerability research, and security tool development.
+                    </p>
+                    <div class="footer-social">
+                        <a href="#" class="social-icon"><i class="fab fa-github"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-discord"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Quick Links</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">BlackArch Linux ISO</a></li>
+                        <li><a href="#">Tool Documentation</a></li>
+                        <li><a href="#">Installation Guide</a></li>
+                        <li><a href="#">Package Requests</a></li>
+                        <li><a href="#">Bug Reports</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Events</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">LeakOS Conference 2026</a></li>
+                        <li><a href="#">CTF Competition</a></li>
+                        <li><a href="#">Training Workshops</a></li>
+                        <li><a href="#">Tool Development Meetup</a></li>
+                        <li><a href="#">Vulnerability Research</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Resources</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">Security Whitepapers</a></li>
+                        <li><a href="#">Exploit Database</a></li>
+                        <li><a href="#">Pentest Methodology</a></li>
+                        <li><a href="#">BlackArch Wiki</a></li>
+                        <li><a href="#">Research Papers</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2026 LeakOS - BlackArch Linux Security Conference. All rights reserved.</p>
+                <p style="margin-top: 10px; font-size: clamp(11px, 1.3vw, 12px);">BlackArch Linux is an Arch Linux-based distribution for penetration testers and security researchers.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Terminal typing effect
+        document.addEventListener('DOMContentLoaded', function() {
+            const cursor = document.querySelector('.cursor');
+            if (cursor) {
+                setInterval(() => {
+                    cursor.style.visibility = cursor.style.visibility === 'hidden' ? 'visible' : 'hidden';
+                }, 500);
+            }
+            
+            // Card hover effects
+            const cards = document.querySelectorAll('.card');
+            cards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    const icon = this.querySelector('.card-icon i');
+                    if (icon) {
+                        icon.style.transform = 'scale(1.2)';
+                        icon.style.transition = 'transform 0.3s';
+                    }
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    const icon = this.querySelector('.card-icon i');
+                    if (icon) {
+                        icon.style.transform = 'scale(1)';
+                    }
+                });
+            });
+            
+            // Stats counter animation
+            const statNumbers = document.querySelectorAll('.stat-number');
+            const observerOptions = {
+                threshold: 0.5
+            };
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const statNumber = entry.target;
+                        const target = parseInt(statNumber.textContent);
+                        let current = 0;
+                        const increment = target / 50;
+                        
+                        const timer = setInterval(() => {
+                            current += increment;
+                            if (current >= target) {
+                                current = target;
+                                clearInterval(timer);
+                            }
+                            statNumber.textContent = Math.floor(current).toLocaleString();
+                        }, 30);
+                        
+                        observer.unobserve(statNumber);
+                    }
+                });
+            }, observerOptions);
+            
+            statNumbers.forEach(statNumber => {
+                observer.observe(statNumber);
+            });
+            
+            // Navigation active state
+            const navLinks = document.querySelectorAll('nav a');
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+        });
+    </script>
+
+
+
+
+
+</body>
+</html>
