@@ -1,0 +1,213 @@
+#!/bin/sh
+# Init script for LFS Live ISO
+
+PATH=/usr/bin:/usr/sbin:/bin:/sbin
+export PATH
+
+DEBUG=false
+for param in $(cat /proc/cmdline); do
+  case $param in
+    debug) DEBUG=true ;;
+  esac
+done
+
+log_msg() {
+  local msg="[INIT] $*"
+  echo "$msg" > /dev/kmsg 2>/dev/null || true
+  echo "$msg"
+}
+
+problem()
+{
+   log_msg "ERROR: Problem detected!"
+   printf "\nEncountered a problem!\nDropping to shell...\n\n"
+   sh
+}
+
+wait_for_device()
+{
+  local device=$1
+  local timeout=30
+  local count=0
+  
+  log_msg "Waiting for $device (timeout: ${timeout}s)"
+  
+  while [ $count -lt $timeout ]; do
+    if [ -b "$device" ]; then
+      log_msg "Device found after ${count}s"
+      return 0
+    fi
+    
+    if [ -L "/dev/disk/by-label/lfs" ]; then
+      log_msg "Found /dev/disk/by-label/lfs"
+      return 0
+    fi
+    
+    sleep 1
+    count=$((count + 1))
+    
+    if [ $((count % 5)) -eq 0 ]; then
+      log_msg "Still waiting... (${count}s)"
+    fi
+  done
+  
+  log_msg "ERROR: Timeout waiting for device"
+  return 1
+}
+
+do_mount_root()
+{
+   log_msg "Starting mount process"
+   
+   # Load modules
+   log_msg "Loading modules..."
+   modprobe squashfs 2>/dev/null && log_msg "squashfs loaded" || log_msg "squashfs not loaded (may be built-in)"
+   modprobe overlay 2>/dev/null && log_msg "overlay loaded" || log_msg "overlay not loaded (may be built-in)"
+   modprobe loop 2>/dev/null && log_msg "loop loaded" || log_msg "loop not loaded (may be built-in)"
+   
+   # Create directories
+   log_msg "Creating directories..."
+   mkdir -p /.root /mnt /squash /cow/mod /cow/buffer
+   
+   # Create loop device
+   if [ ! -b /dev/loop0 ]; then
+     log_msg "Creating /dev/loop0"
+     mknod /dev/loop0 b 7 0
+   fi
+   
+   device="/dev/disk/by-label/lfs"
+   
+   # Wait for device
+   if ! wait_for_device "$device"; then
+     log_msg "ERROR: Device not found"
+     log_msg "Available partitions:"
+     cat /proc/partitions
+     ls -la /dev/disk/by-label/ 2>/dev/null || true
+     problem
+     return 1
+   fi
+   
+   # Mount USB drive
+   log_msg "Mounting $device"
+   if ! mount -t auto "$device" /mnt 2>&1; then
+     log_msg "ERROR: Mount failed"
+     cat /proc/partitions
+     problem
+     return 1
+   fi
+   log_msg "USB mounted"
+   
+   # Check squashfs
+   if [ ! -f /mnt/boot/lfs.squashfs ]; then
+     log_msg "ERROR: squashfs not found!"
+     ls -la /mnt/boot/ 2>/dev/null || true
+     problem
+     return 1
+   fi
+   log_msg "Found squashfs"
+   
+   # Mount squashfs
+   log_msg "Mounting squashfs"
+   if ! mount /mnt/boot/lfs.squashfs /squash -t squashfs -o loop,ro 2>&1; then
+     log_msg "ERROR: squashfs mount failed"
+     problem
+     return 1
+   fi
+   log_msg "squashfs mounted"
+   
+   # Create tmpfs
+   log_msg "Creating tmpfs"
+   if ! mount -t tmpfs tmpfs /cow 2>&1; then
+     log_msg "ERROR: tmpfs failed"
+     problem
+     return 1
+   fi
+   
+   mkdir -p /cow/mod /cow/buffer
+   
+   # Mount overlay
+   log_msg "Mounting overlay"
+   if ! mount -t overlay -o lowerdir=/squash,upperdir=/cow/mod,workdir=/cow/buffer overlay /.root 2>&1; then
+     log_msg "ERROR: overlay mount failed"
+     problem
+     return 1
+   fi
+   log_msg "Overlay mounted"
+   
+   # Bind mounts
+   mkdir -p /.root/mnt/changes /.root/mnt/container
+   mount --bind /cow/mod /.root/mnt/changes
+   mount --bind /mnt /.root/mnt/container
+   
+   log_msg "Root filesystem ready!"
+   
+   if [ "$DEBUG" = "true" ]; then
+     log_msg "=== DEBUG INFO ==="
+     mount | grep -E "(squash|overlay|tmpfs|lfs)"
+     log_msg "=== ROOT CONTENTS ==="
+     ls -la /.root/ | head -20
+   fi
+}
+
+# Main
+init=/sbin/init
+rootdelay=
+
+log_msg "=== LFS Live ISO Starting ==="
+
+mount -n -t devtmpfs devtmpfs /dev
+mount -n -t proc     proc     /proc
+mount -n -t sysfs    sysfs    /sys
+mount -n -t tmpfs    tmpfs    /run
+
+read -r cmdline < /proc/cmdline
+log_msg "Cmdline: $cmdline"
+
+for param in $cmdline ; do
+  case $param in
+    init=*      ) init=${param#init=}             ;;
+    rootdelay=* ) rootdelay=${param#rootdelay=}   ;;
+  esac
+done
+
+# Start udev
+log_msg "Starting udev..."
+if [ -x /sbin/udevd ]; then
+  UDEVD=/sbin/udevd
+elif [ -x /usr/sbin/udevd ]; then
+  UDEVD=/usr/sbin/udevd
+elif [ -x /lib/udev/udevd ]; then
+  UDEVD=/lib/udev/udevd
+elif [ -x /usr/lib/udev/udevd ]; then
+  UDEVD=/usr/lib/udev/udevd
+else
+  log_msg "ERROR: udevd not found"
+  problem
+fi
+
+${UDEVD} --daemon --resolve-names=never
+udevadm trigger
+udevadm settle
+
+log_msg "udev started"
+
+# Apply rootdelay
+if [ -n "$rootdelay" ] ; then 
+  log_msg "Applying rootdelay: ${rootdelay}s"
+  sleep "$rootdelay"
+fi
+
+# Mount root
+do_mount_root || problem
+
+# Stop udev
+log_msg "Stopping udev..."
+killall -w ${UDEVD##*/}
+
+# Switch to new root
+log_msg "Switching to new root..."
+exec switch_root /.root "$init" "$@"
+
+# If we get here, something failed
+log_msg "FATAL: switch_root failed!"
+problem
