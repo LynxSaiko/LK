@@ -1,0 +1,23 @@
+# ===================== Tambah user non-root dinamis =====================
+log_msg "Menambahkan user non-root 'leakos' secara dinamis..."
+
+# Pastikan tools ada (useradd dari shadow-utils, biasanya ada di rootfs)
+if ! command -v useradd >/dev/null; then
+  log_msg "WARNING: useradd tidak ditemukan di rootfs!"
+else
+  # Buat group wheel/sudo kalau belum ada (untuk sudo access)
+  chroot /.root groupadd -f wheel 2>/dev/null || true
+
+  # Tambah user leaks (home di /home/leaks, shell bash, group wheel)
+  chroot /.root useradd -m -G wheel -s /bin/bash leakos
+
+  # Set password (contoh: password 'leakos123' — ganti sesuai keinginan)
+  # Gunakan echo + chpasswd supaya aman (tidak tampil di log)
+  echo "leakos:leakos123" | chroot /.root chpasswd
+
+  # Beri sudo tanpa password (opsional, untuk live convenience)
+  echo "leakos ALL=(ALL) PASSWD: ALL" > /.root/etc/sudoers.d/leakos
+  chmod 0440 /.root/etc/sudoers.d/leakos
+
+  log_msg "User 'leakos' dibuat dengan password 'leakos123' dan sudo PASSWD!"
+fi
