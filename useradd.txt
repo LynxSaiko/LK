@@ -21,3 +21,123 @@ else
 
   log_msg "User 'leakos' dibuat dengan password 'leakos123' dan sudo PASSWD!"
 fi
+
+
+
+# ===================== Setup .bashrc default untuk root dan user baru =====================
+log_msg "Menyiapkan .bashrc default yang nyaman..."
+
+cat > /.root/root/.bashrc << 'EOF'
+# .bashrc untuk root di Leakos Live
+
+[[ $- != *i* ]] && return
+
+# Prompt warna (biru untuk root)
+PS1='\[\033[01;34m\][\u@\h \W]\\$ \[\033[00m\] '
+
+# Alias berguna
+alias ls='ls --color=auto'
+alias ll='ls -lAh --group-directories-first'
+alias la='ls -A'
+alias grep='grep --color=auto'
+alias df='df -h'
+alias free='free -h'
+alias ..='cd ..'
+alias ...='cd ../..'
+alias cls='clear'
+
+# History lebih baik
+HISTSIZE=5000
+HISTFILESIZE=10000
+HISTCONTROL=ignoreboth:erasedups
+shopt -s histappend
+
+# Editor default
+export EDITOR=nano
+export VISUAL=nano
+
+# Pesan selamat datang
+echo -e "\nSelamat datang di Leakos Live!\nKernel: $(uname -r)\nUptime: $(uptime -p)\n"
+EOF
+
+# Copy ke /etc/skel supaya user baru (kalau dibuat) otomatis dapat
+cp -f /.root/root/.bashrc /.root/etc/skel/.bashrc 2>/dev/null || true
+
+# Opsional: kalau user 'leakos' sudah ada di rootfs, copy juga
+if [ -d /.root/home/leaks ]; then
+  cp -f /.root/root/.bashrc /.root/home/leaks/.bashrc
+  chown 1000:1000 /.root/home/leaks/.bashrc 2>/dev/null || true  # sesuaikan UID/GID user leaks
+fi
+
+log_msg ".bashrc telah disiapkan!"
+
+# ===================== Setup .Xresources default =====================
+log_msg "Menyiapkan .Xresources default untuk X11..."
+
+cat > /.root/root/.Xresources << 'EOF'
+! .Xresources - konfigurasi dasar X11 untuk Leakos Live
+
+! Warna tema sederhana (dark-ish, cocok terminal)
+*background:    #1e1e2e
+*foreground:    #cdd6f4
+
+! Warna standar 16 colors (Catppuccin Mocha inspired, bisa diganti)
+*color0:        #45475a
+*color1:        #f38ba8
+*color2:        #a6e3a1
+*color3:        #f9e2af
+*color4:        #89b4fa
+*color5:        #f5c2e7
+*color6:        #94e2d5
+*color7:        #bac2de
+*color8:        #585b70
+*color9:        #f38ba8
+*color10:       #a6e3a1
+*color11:       #f9e2af
+*color12:       #89b4fa
+*color13:       #f5c2e7
+*color14:       #94e2d5
+*color15:       #a6adc8
+
+! Font terminal (ganti sesuai paket yang ada di rootfs)
+XTerm*faceName: monospace
+XTerm*faceSize: 12
+UXTerm*faceName: monospace
+UXTerm*faceSize: 12
+
+! Cursor & mouse
+Xcursor.theme: Adwaita
+Xcursor.size: 24
+
+! Anti-aliasing & hinting
+Xft.antialias: 1
+Xft.hinting:   1
+Xft.hintstyle: hintslight
+Xft.rgba:      rgb
+
+! Matikan bell (beep)
+*bellIsUrgent: false
+*bellOnReset:  false
+
+! Contoh custom untuk urxvt/rxvt (kalau pakai)
+URxvt*depth: 32
+URxvt*background: rgba:1e00:1e00:2e00:eeee
+URxvt*foreground: #cdd6f4
+URxvt*perl-ext-common: default,matcher
+
+! Reload dengan xrdb -merge ~/.Xresources setelah login
+EOF
+
+# Merge .Xresources ke root (agar langsung aktif kalau X sudah jalan)
+chroot /.root xrdb -merge /root/.Xresources 2>/dev/null || true
+
+# Copy ke /etc/skel supaya user baru otomatis dapat
+cp -f /.root/root/.Xresources /.root/etc/skel/.Xresources 2>/dev/null || true
+
+# Opsional: kalau user 'leaks' sudah ada
+if [ -d /.root/home/leaks ]; then
+  cp -f /.root/root/.Xresources /.root/home/leaks/.Xresources
+  chown 1000:1000 /.root/home/leaks/.Xresources 2>/dev/null || true
+fi
+
+log_msg ".Xresources telah disiapkan!"
