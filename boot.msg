@@ -1,4 +1,4 @@
-╔════════════════════════════════════════════════════════════╗
+╔═══════════════════════════════════════════════════╗
 ║                                                            ║
 ║                  L E A K O S   L I V E                     ║
 ║                                                            ║
@@ -9,7 +9,7 @@
 ║      • Press Tab to edit boot parameters                   ║
 ║      • F1 for help, F2 for advanced options                ║
 ║                                                            ║
-╚════════════════════════════════════════════════════════════╝
+╚═══════════════════════════════════════════════════╝
 
 Welcome to Leakos Live!
 This is a custom LFS-based system with squashfs overlay
